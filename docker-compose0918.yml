@@ -27,12 +27,13 @@ services:
      volumes:
        - /data/consul/data:/consul/data
      links:
+       - etcd
        - mysql
        - openldap
        - myadmin
      command: /bin/consul agent -server -bootstrap -data-dir=/consul/data  -node=server1 -ui -client=0.0.0.0
 
-
+ 
     openldap:
      image: registry.connextpaas.com/library/openldap:1.1.11
      ports: 
@@ -43,7 +44,7 @@ services:
      environment:
        LDAP_DOMAIN: "connextpaas.com"
        LDAP_BASE_DN: "connextpaas.com"
-       LDAP_ADMIN_PASSWORD: Connext@0101
+       LDAP_ADMIN_PASSWORD: "Connext@0101"
     
     phpldapadmin:
      image: registry.connextpaas.com/library/phpldapadmin:0.7.1
@@ -56,7 +57,7 @@ services:
        - openldap
 
     gateway: 
-     image: registry.connextpaas.com/connextpaas/gateway:2.8.4.2
+     image: registry.connextpaas.com/connextpaas/gateway:20191018-3548690e
      links:
        - mysql
        - consul
@@ -77,7 +78,7 @@ services:
      restart: on-failure:5 
        
     userservice:
-     image: registry.connextpaas.com/connextpaas/userservice:2.8.4.2
+     image: registry.connextpaas.com/connextpaas/userservice:20190814-d8f38098
      links:
        - mysql
        - consul
@@ -93,24 +94,176 @@ services:
        retries: 2
      restart: on-failure:5
 
-           
+    k8scluster:
+     image: registry.connextpaas.com/connextpaas/k8scluster:20190814-84c432cb
+     links:
+       - mysql
+       - consul
+     environment:
+       CONSUL_ADDR: "http://consul:8500"
+       CONSUL_HTTP_ADDR: "http://consul:8500"
+     depends_on:
+       - consul
+     healthcheck:
+       test: curl  http://consul:8500/v1/kv/micro/config/cache
+       interval: 5s
+       timeout: 5s
+       retries: 2
+     restart: on-failure:5
 
+    parentprojectservice:
+     image: registry.connextpaas.com/connextpaas/parentprojectservice:20190814-8012bdbe
+     links:
+       - mysql
+       - consul
+     environment:
+       CONSUL_ADDR: "http://consul:8500"
+       CONSUL_HTTP_ADDR: "http://consul:8500"
+     depends_on:
+       - consul
+     healthcheck:
+       test: curl  http://consul:8500/v1/kv/micro/config/cache
+       interval: 5s
+       timeout: 5s
+       retries: 2
+     restart: on-failure:5
+   
+    kubernete:
+     image: registry.connextpaas.com/connextpaas/kubernete:20190814-cd0dd0a5
+     links:
+       - consul
+     environment:
+       CONSUL_ADDR: "http://consul:8500"
+       CONSUL_HTTP_ADDR: "http://consul:8500"
+     depends_on:
+       - consul
+     healthcheck:
+       test: curl  http://consul:8500/v1/kv/micro/config/cache
+       interval: 5s
+       timeout: 5s
+       retries: 2
+     restart: on-failure:5
 
     nginx:
-      image: registry.connextpaas.com/connextpaas/connextvue:2.8.4.3
-      ports:
+     image: registry.connextpaas.com/connextpaas/connextvue:20191122-b4b6ba98
+     ports:
        - 8002:8002
-      network_mode: "host"
-      
+     network_mode: "host"
+
       volumes:
        - ./static:/static
        - ./static/header-logo.868df39a.png:/data/dist/img/header-logo.868df39a.png
        - ./static/login-logo.d967e918.svg:/data/dist/img/login-logo.d967e918.svg
+
+    k8snamespaceservice:
+     image: registry.connextpaas.com/connextpaas/k8snamespaceservice:2019null11-86659a63
+     links: 
+       - mysql
+       - consul
+     environment:
+       CONSUL_ADDR: "http://consul:8500"
+       CONSUL_HTTP_ADDR: "http://consul:8500"
+     depends_on:
+       - consul
+     healthcheck:
+       test: curl  http://consul:8500/v1/kv/micro/config/cache
+       interval: 5s
+       timeout: 5s
+       retries: 2
+     restart: on-failure:5
+
+    k8sproject:
+     image: registry.connextpaas.com/connextpaas/k8sproject:2019null16-e3921389
+     links: 
+       - mysql
+       - consul
+     environment:
+       CONSUL_ADDR: "http://consul:8500"
+       CONSUL_HTTP_ADDR: "http://consul:8500"
+     depends_on:
+       - consul
+     healthcheck:
+       test: curl  http://consul:8500/v1/kv/micro/config/cache
+       interval: 5s
+       timeout: 5s
+       retries: 2
+     restart: on-failure:5
+
+    vmproject:
+     image: registry.connextpaas.com/connextpaas/vmproject:2019null03-07935f30
+     links: 
+       - mysql
+       - consul
+     environment:
+       CONSUL_ADDR: "http://consul:8500"
+       CONSUL_HTTP_ADDR: "http://consul:8500"
+     depends_on:
+       - consul
+     healthcheck:
+       test: curl  http://consul:8500/v1/kv/micro/config/cache
+       interval: 5s
+       timeout: 5s
+       retries: 2
+     restart: on-failure:5
+
+    vmdeploy:
+     image: registry.connextpaas.com/connextpaas/vmdeploy:2019null11-c024fa49
+     links: 
+       - consul
+     ports:
+       - 59083:59083
+     environment:
+       CONSUL_ADDR: "http://consul:8500"
+       CONSUL_HTTP_ADDR: "http://consul:8500"
+     depends_on:
+       - consul
+     healthcheck:
+       test: curl  http://consul:8500/v1/kv/micro/config/cache
+       interval: 5s
+       timeout: 5s
+       retries: 2
+     restart: on-failure:5
+
+    jobservice:
+     image: registry.connextpaas.com/connextpaas/jobservice:20190814-124de610
+     links:
+       - mysql
+       - consul
+     environment:
+       CONSUL_ADDR: "http://consul:8500"
+       CONSUL_HTTP_ADDR: "http://consul:8500"
+     depends_on:
+       - consul
+     healthcheck:
+       test: curl  http://consul:8500/v1/kv/micro/config/cache
+       interval: 5s
+       timeout: 5s
+       retries: 2
+     restart: on-failure:5
+
+    spservice:
+     image: registry.connextpaas.com/connextpaas/spservice:20190828-c82425b2
+     volumes: 
+       - /data/spservice:/data/spservice
+     links: 
+       - mysql
+       - consul
+     environment:
+       CONSUL_ADDR: "http://consul:8500"
+       CONSUL_HTTP_ADDR: "http://consul:8500"
+     depends_on:
+       - consul
+     healthcheck:
+       test: curl  http://consul:8500/v1/kv/micro/config/cache
+       interval: 5s
+       timeout: 5s
+       retries: 2
+     restart: on-failure:5
      
-    fileserver:
-     image: registry.connextpaas.com/connextpaas/fileserver:2.8.4.2
+    fileserver: 
+     image: registry.connextpaas.com/connextpaas/fileserver:20191106-be66ac97
      volumes:
-       - /static:/static
+       - /static/file:/static
      links:
        - consul
      ports:
@@ -126,25 +279,117 @@ services:
        timeout: 5s
        retries: 2
      restart: on-failure:5
-
-    api-service-platform:
-     image: registry.connextpaas.com/connextpaas/api-service-platform:20191016-8bf16bfb
-     links:
+    
+    businesscenter:
+     image: registry.connextpaas.com/connextpaas/businesscenter:2019null04-08e45169
+     links: 
+      - consul
       - mysql
+     environment:
+      CONSUL_ADDR: "http://consul:8500"
+      CONSUL_HTTP_ADDR: "http://consul:8500"
+     depends_on:
+       - consul
+     healthcheck:
+       test: curl  http://consul:8500/v1/kv/micro/config/cache
+       interval: 5s
+       timeout: 5s
+       retries: 2
+     restart: on-failure:5
+      
+    hostservice:
+     image: registry.connextpaas.com/connextpaas/hostservice:20190814-5bb5deed
+     links:
       - consul
      environment:
       CONSUL_ADDR: "http://consul:8500"
       CONSUL_HTTP_ADDR: "http://consul:8500"
      depends_on:
-      - consul
+       - consul
      healthcheck:
-      test: curl  http://consul:8500/v1/kv/micro/config/cache
-      interval: 5s
-      timeout: 5s
-      retries: 2
+       test: curl  http://consul:8500/v1/kv/micro/config/cache
+       interval: 5s
+       timeout: 5s
+       retries: 2
      restart: on-failure:5
-
      
+    component:
+     image: registry.connextpaas.com/connextpaas/component:20190814-f9d12d55
+     links:
+      - consul
+     environment:
+      CONSUL_ADDR: "http://consul:8500"
+      CONSUL_HTTP_ADDR: "http://consul:8500"
+     depends_on:
+       - consul
+     healthcheck:
+       test: curl  http://consul:8500/v1/kv/micro/config/cache
+       interval: 5s
+       timeout: 5s
+       retries: 2
+     restart: on-failure:5
+      
+    ci:
+     image: registry.connextpaas.com/connextpaas/ci:20190814-783aa556
+     links:
+      - consul
+     environment:
+      CONSUL_ADDR: http://consul:8500
+      CONSUL_HTTP_ADDR: http://consul:8500
+     depends_on:
+       - consul
+     healthcheck:
+       test: curl  http://consul:8500/v1/kv/micro/config/cache
+       interval: 5s
+       timeout: 5s
+       retries: 2
+     restart: on-failure:5
+           
+    api-service-platform:
+     image: registry.connextpaas.com/connextpaas/api-service-platform:20191122-84971df8
+     links:
+       - mysql
+       - consul
+     environment:
+       CONSUL_ADDR: "http://consul:8500"
+       CONSUL_HTTP_ADDR: "http://consul:8500"
+     depends_on:
+       - consul
+     healthcheck:
+       test: curl  http://consul:8500/v1/kv/micro/config/cache
+       interval: 5s
+       timeout: 5s
+       retries: 2
+     restart: on-failure:5
+    
+    auth-service:
+     image: registry.connextpaas.com/connextpaas/auth-service:20191121-cd1e6fbc
+     links:
+      - consul
+     environment:
+      CONSUL_ADDR: "http://consul:8500"
+      CONSUL_HTTP_ADDR: "http://consul:8500"
+     ports:
+       - 8192:8192
+     depends_on:
+       - consul
+     healthcheck:
+       test: curl  http://consul:8500/v1/kv/micro/config/cache
+       interval: 5s
+       timeout: 5s
+       retries: 2
+     restart: on-failure:5
+     
+    turbine:
+     image: registry.connextpaas.com/connextpaas/turbine:2.8.3_fix2
+     environment:
+        HOST_SERVICE_IP: 10.128.0.233
+        PAAS_USERNAME: super
+        PAAS_PORT: 8002
+        PAAS_PASSWORD: Connext@0101
+     ports:
+       - 9999:8080
+
     redis:
      image: registry.connextpaas.com/connextpaas/superset_redis:2.8.4
      restart: unless-stopped
@@ -184,7 +429,7 @@ services:
        - redis
      volumes:
        - /data/superset/superset_config.py:/home/superset/superset/superset_config.py
-
+    
     pd0:
      image: pingcap/pd:latest
      ports:
@@ -393,3 +638,9 @@ services:
       - "3000:3000"
      restart: on-failure
  
+    newjenkins:
+     image: registry.connextpaas.com/connextpaas/newjenkins:v1
+     ports:
+       - 8081:8080
+     volumes:
+       - /var/run/docker.sock:/var/run/docker.sock
