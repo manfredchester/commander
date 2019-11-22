@@ -97,8 +97,6 @@ services:
 
 
     nginx:
-      #image: registry.connextpaas.com/connextpaas/connextvue:2019null06-ab9780d3
-      #image: registry.connextpaas.com/connextpaas/connextvue:2019null12-6441a46c
       image: registry.connextpaas.com/connextpaas/connextvue:2.8.4.3
       ports:
        - 8002:8002
@@ -130,13 +128,6 @@ services:
      restart: on-failure:5
 
     api-service-platform:
-     #image: registry.connextpaas.com/connextpaas/api-service-platform:20190830-60b55c2e
-     #image:  registry.connextpaas.com/connextpaas/api-service-platform:2019null09-571e6163 
-     #image: registry.connextpaas.com/connextpaas/api-service-platform:2019null09-9821a90d
-     #image: registry.connextpaas.com/connextpaas/api-service-platform:2019null16-74bae8a9
-     #image: registry.connextpaas.com/connextpaas/api-service-platform:20190919-239c1f68
-     #image: registry.connextpaas.com/connextpaas/api-service-platform:2.8.4.3
-     #image: registry.connextpaas.com/connextpaas/api-service-platform:20190920-ce81b934
      image: registry.connextpaas.com/connextpaas/api-service-platform:20191016-8bf16bfb
      links:
       - mysql
