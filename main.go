@@ -1,10 +1,8 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"os/exec"
-	"github.com/urfave/cli/v2"
 )
 
 // type Cmd struct {
@@ -22,71 +20,11 @@ import (
 // 	ProcessState *os.ProcessState　　//ProcessState包含一个退出进程的信息，当进程调用Wait或者Run时便会产生该信息．
 // }
 func main() {
-	cmd := exec.Command("ls")
-	fmt.Println(cmd)
-}
-
-func IfSoftwareExt(name string) (string, error) {
-	cmd1 := exec.Command("/usr/bin/rpm", "-qa")
-	cmd2 := exec.Command("grep", name)
-	var outbuf1 bytes.Buffer
-	cmd1.Stdout = &outbuf1
-	if err := cmd1.Start(); err != nil {
-		return "", err
+	cmd := exec.Command("dir")
+	//查看当前目录下文件
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Println(err)
 	}
-	if err := cmd1.Wait(); err != nil {
-		return "", err
-	}
-	var outbuf2 bytes.Buffer
-	cmd2.Stdin = &outbuf1
-	cmd2.Stdout = &outbuf2
-	if err := cmd2.Start(); err != nil {
-		return "", err
-	}
-	if err := cmd2.Wait(); err != nil {
-		return "", err
-	}
-	return outbuf2.String(), nil
-}
-
-var StopShCmd = &cli.Command{
-	Name:  "stopsh",
-	Usage: "run sh stop.sh",
-	Action: func(context *cli.Context) error {
-		logger.Info("command stopsh")
-
-		if !util.HasExist("/data/shepherd/stop.sh") {
-			util.CreatFile("/data/shepherd/stop.sh", getStopShConent())
-		}
-		err2 := os.Remove("/data/shepherd/agent.lock")
-		if util.IsNotEmpty(err2) {
-			logger.Error(err2)
-		}
-		// command2 := exec.Command("/usr/bin/rm", "-f", "/data/shepherd/agent.lock")
-		// err2 := command2.Start()
-		// if util.IsNotEmpty(err2) {
-		// 	logger.Error(err2)
-		// 	return err2
-		// }
-		command := exec.Command("/bin/bash", "/data/shepherd/stop.sh")
-		//command.Start()
-		err := command.Run()
-		if util.IsNotEmpty(err) {
-			logger.Error(err)
-			return err
-		}
-		return nil
-	},
-}
-
-func getStopShConent() string {
-	buff := bytes.Buffer{}
-	buff.WriteString("#!/bin/bash\n")
-	buff.WriteString("rm -f /data/shepherd/agent.lock\n")
-	buff.WriteString("proc=`ps -ef | grep shepherd | grep -v grep | awk '{print $2}'`\n")
-	buff.WriteString("if [ -n \"$proc\" ]; then\n")
-	buff.WriteString("  echo \"proc=$proc \"1\n")
-	buff.WriteString("  kill -9  $proc\n")
-	buff.WriteString("fi\n")
-	return buff.String()
+	fmt.Println(string(out))
 }
