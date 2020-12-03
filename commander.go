@@ -9,13 +9,12 @@ import (
 	"runtime"
 	"strings"
 	"syscall"
-	"test/zhlog"
 )
 
 // LookPath在环境变量中查找科执行二进制文件，如果file中包含一个斜杠，则直接根据绝对路径或者相对本目录的相对路径去查找
 func LookPath() {
 	f, err := exec.LookPath("/root/zhxu")
-	zhlog.Assert(err)
+	Assert(err)
 	fmt.Println("file:", f)
 
 }
@@ -30,7 +29,7 @@ func Cmmd() {
 	cmd.Stdout = &out
 
 	err := cmd.Run()
-	zhlog.Assert(err)
+	Assert(err)
 	fmt.Println("out string{}:", out.String())
 }
 
@@ -49,9 +48,9 @@ func CombinedOutput() {
 func StdinPipe() {
 	cmd := exec.Command("ls")
 	stdin, err := cmd.StdinPipe()
-	zhlog.Assert(err)
+	Assert(err)
 	_, err = stdin.Write([]byte("tep.txt"))
-	zhlog.Assert(err)
+	Assert(err)
 	stdin.Close()
 	cmd.Stdout = os.Stdout
 	cmd.Start()
@@ -144,13 +143,13 @@ func (e *LinuxCommander) ExecAsync(sysType string, stdout chan string, args ...s
 		cmd := exec.Command(sysType, args...)
 
 		outpip, err := cmd.StdoutPipe()
-		zhlog.Assert(err)
+		Assert(err)
 		err = cmd.Start()
-		zhlog.Assert(err)
+		Assert(err)
 
 		pidChan <- cmd.Process.Pid
 		out, err := ioutil.ReadAll(outpip)
-		zhlog.Assert(err)
+		Assert(err)
 
 		stdout <- string(out)
 	}()

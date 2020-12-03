@@ -4,33 +4,37 @@ import (
 	"fmt"
 	"sync"
 	"time"
-
-	"github.com/connext-cs/pub/zhlog"
 )
+
+func Assert(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
 
 func schedul() {
 	// tm()
 	// tc()
 	// tmc()
 	// tmstop()
-	// zone()
+	zone()
 	// tcstop()
 }
 
 func zone() {
 	// 生成UTC的时间
-	t1, err := time.Parse("2006-01-02 15:04:05", "2020-02-21 08:59:10")
-	zhlog.Assert(err)
+	t1, err := time.Parse("2006-01-02 15:04:05", "2020-03-03 08:59:10")
+	Assert(err)
 	fmt.Println(t1)
-	// fmt.Println(t1.Unix())
+	fmt.Println("dasdsad", t1.Unix())
 
 	// 生成当地的时间带有CST
 	local, err := time.LoadLocation("Local")
-	zhlog.Assert(err)
-	str, err := time.ParseInLocation("2006-01-02 15:04:05", "2020-02-21 08:59:10", local)
-	zhlog.Assert(err)
+	Assert(err)
+	str, err := time.ParseInLocation("2006-01-02 15:04:05", "2020-03-03 08:59:10", local)
+	Assert(err)
 	fmt.Println(str)
-	// fmt.Println(str.Unix())
+	fmt.Println("dasdsad", str.Unix())
 
 	timestamp := time.Now().Unix()
 	// fmt.Println(timestamp)
